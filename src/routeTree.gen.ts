@@ -13,8 +13,15 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminProtectedRouteRouteImport } from './routes/admin/_protected/route'
+import { Route as AdminProtectedPresensiRouteImport } from './routes/admin/_protected/presensi'
+import { Route as AdminProtectedLogRouteImport } from './routes/admin/_protected/log'
+import { Route as AdminProtectedKelompokRouteImport } from './routes/admin/_protected/kelompok'
+import { Route as AdminProtectedKegiatanRouteImport } from './routes/admin/_protected/kegiatan'
 import { Route as AdminProtectedDesaRouteImport } from './routes/admin/_protected/desa'
 import { Route as AdminProtectedDashboardRouteImport } from './routes/admin/_protected/dashboard'
+import { Route as AdminProtectedGenerusIndexRouteImport } from './routes/admin/_protected/generus/index'
+import { Route as AdminProtectedGenerusCreateRouteImport } from './routes/admin/_protected/generus/create'
+import { Route as AdminProtectedGenerusUpdateIdRouteImport } from './routes/admin/_protected/generus/update.$id'
 
 const AdminRouteImport = createFileRoute('/admin')()
 
@@ -32,6 +39,26 @@ const AdminProtectedRouteRoute = AdminProtectedRouteRouteImport.update({
   id: '/_protected',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProtectedPresensiRoute = AdminProtectedPresensiRouteImport.update({
+  id: '/presensi',
+  path: '/presensi',
+  getParentRoute: () => AdminProtectedRouteRoute,
+} as any)
+const AdminProtectedLogRoute = AdminProtectedLogRouteImport.update({
+  id: '/log',
+  path: '/log',
+  getParentRoute: () => AdminProtectedRouteRoute,
+} as any)
+const AdminProtectedKelompokRoute = AdminProtectedKelompokRouteImport.update({
+  id: '/kelompok',
+  path: '/kelompok',
+  getParentRoute: () => AdminProtectedRouteRoute,
+} as any)
+const AdminProtectedKegiatanRoute = AdminProtectedKegiatanRouteImport.update({
+  id: '/kegiatan',
+  path: '/kegiatan',
+  getParentRoute: () => AdminProtectedRouteRoute,
+} as any)
 const AdminProtectedDesaRoute = AdminProtectedDesaRouteImport.update({
   id: '/desa',
   path: '/desa',
@@ -42,18 +69,50 @@ const AdminProtectedDashboardRoute = AdminProtectedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminProtectedRouteRoute,
 } as any)
+const AdminProtectedGenerusIndexRoute =
+  AdminProtectedGenerusIndexRouteImport.update({
+    id: '/generus/',
+    path: '/generus/',
+    getParentRoute: () => AdminProtectedRouteRoute,
+  } as any)
+const AdminProtectedGenerusCreateRoute =
+  AdminProtectedGenerusCreateRouteImport.update({
+    id: '/generus/create',
+    path: '/generus/create',
+    getParentRoute: () => AdminProtectedRouteRoute,
+  } as any)
+const AdminProtectedGenerusUpdateIdRoute =
+  AdminProtectedGenerusUpdateIdRouteImport.update({
+    id: '/generus/update/$id',
+    path: '/generus/update/$id',
+    getParentRoute: () => AdminProtectedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/admin': typeof AdminProtectedRouteRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/dashboard': typeof AdminProtectedDashboardRoute
   '/admin/desa': typeof AdminProtectedDesaRoute
+  '/admin/kegiatan': typeof AdminProtectedKegiatanRoute
+  '/admin/kelompok': typeof AdminProtectedKelompokRoute
+  '/admin/log': typeof AdminProtectedLogRoute
+  '/admin/presensi': typeof AdminProtectedPresensiRoute
+  '/admin/generus/create': typeof AdminProtectedGenerusCreateRoute
+  '/admin/generus': typeof AdminProtectedGenerusIndexRoute
+  '/admin/generus/update/$id': typeof AdminProtectedGenerusUpdateIdRoute
 }
 export interface FileRoutesByTo {
   '/admin': typeof AdminProtectedRouteRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/dashboard': typeof AdminProtectedDashboardRoute
   '/admin/desa': typeof AdminProtectedDesaRoute
+  '/admin/kegiatan': typeof AdminProtectedKegiatanRoute
+  '/admin/kelompok': typeof AdminProtectedKelompokRoute
+  '/admin/log': typeof AdminProtectedLogRoute
+  '/admin/presensi': typeof AdminProtectedPresensiRoute
+  '/admin/generus/create': typeof AdminProtectedGenerusCreateRoute
+  '/admin/generus': typeof AdminProtectedGenerusIndexRoute
+  '/admin/generus/update/$id': typeof AdminProtectedGenerusUpdateIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,12 +121,41 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/_protected/dashboard': typeof AdminProtectedDashboardRoute
   '/admin/_protected/desa': typeof AdminProtectedDesaRoute
+  '/admin/_protected/kegiatan': typeof AdminProtectedKegiatanRoute
+  '/admin/_protected/kelompok': typeof AdminProtectedKelompokRoute
+  '/admin/_protected/log': typeof AdminProtectedLogRoute
+  '/admin/_protected/presensi': typeof AdminProtectedPresensiRoute
+  '/admin/_protected/generus/create': typeof AdminProtectedGenerusCreateRoute
+  '/admin/_protected/generus/': typeof AdminProtectedGenerusIndexRoute
+  '/admin/_protected/generus/update/$id': typeof AdminProtectedGenerusUpdateIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/admin' | '/admin/login' | '/admin/dashboard' | '/admin/desa'
+  fullPaths:
+    | '/admin'
+    | '/admin/login'
+    | '/admin/dashboard'
+    | '/admin/desa'
+    | '/admin/kegiatan'
+    | '/admin/kelompok'
+    | '/admin/log'
+    | '/admin/presensi'
+    | '/admin/generus/create'
+    | '/admin/generus'
+    | '/admin/generus/update/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/admin' | '/admin/login' | '/admin/dashboard' | '/admin/desa'
+  to:
+    | '/admin'
+    | '/admin/login'
+    | '/admin/dashboard'
+    | '/admin/desa'
+    | '/admin/kegiatan'
+    | '/admin/kelompok'
+    | '/admin/log'
+    | '/admin/presensi'
+    | '/admin/generus/create'
+    | '/admin/generus'
+    | '/admin/generus/update/$id'
   id:
     | '__root__'
     | '/admin'
@@ -75,6 +163,13 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/_protected/dashboard'
     | '/admin/_protected/desa'
+    | '/admin/_protected/kegiatan'
+    | '/admin/_protected/kelompok'
+    | '/admin/_protected/log'
+    | '/admin/_protected/presensi'
+    | '/admin/_protected/generus/create'
+    | '/admin/_protected/generus/'
+    | '/admin/_protected/generus/update/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -104,6 +199,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProtectedRouteRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/_protected/presensi': {
+      id: '/admin/_protected/presensi'
+      path: '/presensi'
+      fullPath: '/admin/presensi'
+      preLoaderRoute: typeof AdminProtectedPresensiRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
+    }
+    '/admin/_protected/log': {
+      id: '/admin/_protected/log'
+      path: '/log'
+      fullPath: '/admin/log'
+      preLoaderRoute: typeof AdminProtectedLogRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
+    }
+    '/admin/_protected/kelompok': {
+      id: '/admin/_protected/kelompok'
+      path: '/kelompok'
+      fullPath: '/admin/kelompok'
+      preLoaderRoute: typeof AdminProtectedKelompokRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
+    }
+    '/admin/_protected/kegiatan': {
+      id: '/admin/_protected/kegiatan'
+      path: '/kegiatan'
+      fullPath: '/admin/kegiatan'
+      preLoaderRoute: typeof AdminProtectedKegiatanRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
+    }
     '/admin/_protected/desa': {
       id: '/admin/_protected/desa'
       path: '/desa'
@@ -118,17 +241,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProtectedDashboardRouteImport
       parentRoute: typeof AdminProtectedRouteRoute
     }
+    '/admin/_protected/generus/': {
+      id: '/admin/_protected/generus/'
+      path: '/generus'
+      fullPath: '/admin/generus'
+      preLoaderRoute: typeof AdminProtectedGenerusIndexRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
+    }
+    '/admin/_protected/generus/create': {
+      id: '/admin/_protected/generus/create'
+      path: '/generus/create'
+      fullPath: '/admin/generus/create'
+      preLoaderRoute: typeof AdminProtectedGenerusCreateRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
+    }
+    '/admin/_protected/generus/update/$id': {
+      id: '/admin/_protected/generus/update/$id'
+      path: '/generus/update/$id'
+      fullPath: '/admin/generus/update/$id'
+      preLoaderRoute: typeof AdminProtectedGenerusUpdateIdRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
+    }
   }
 }
 
 interface AdminProtectedRouteRouteChildren {
   AdminProtectedDashboardRoute: typeof AdminProtectedDashboardRoute
   AdminProtectedDesaRoute: typeof AdminProtectedDesaRoute
+  AdminProtectedKegiatanRoute: typeof AdminProtectedKegiatanRoute
+  AdminProtectedKelompokRoute: typeof AdminProtectedKelompokRoute
+  AdminProtectedLogRoute: typeof AdminProtectedLogRoute
+  AdminProtectedPresensiRoute: typeof AdminProtectedPresensiRoute
+  AdminProtectedGenerusCreateRoute: typeof AdminProtectedGenerusCreateRoute
+  AdminProtectedGenerusIndexRoute: typeof AdminProtectedGenerusIndexRoute
+  AdminProtectedGenerusUpdateIdRoute: typeof AdminProtectedGenerusUpdateIdRoute
 }
 
 const AdminProtectedRouteRouteChildren: AdminProtectedRouteRouteChildren = {
   AdminProtectedDashboardRoute: AdminProtectedDashboardRoute,
   AdminProtectedDesaRoute: AdminProtectedDesaRoute,
+  AdminProtectedKegiatanRoute: AdminProtectedKegiatanRoute,
+  AdminProtectedKelompokRoute: AdminProtectedKelompokRoute,
+  AdminProtectedLogRoute: AdminProtectedLogRoute,
+  AdminProtectedPresensiRoute: AdminProtectedPresensiRoute,
+  AdminProtectedGenerusCreateRoute: AdminProtectedGenerusCreateRoute,
+  AdminProtectedGenerusIndexRoute: AdminProtectedGenerusIndexRoute,
+  AdminProtectedGenerusUpdateIdRoute: AdminProtectedGenerusUpdateIdRoute,
 }
 
 const AdminProtectedRouteRouteWithChildren =

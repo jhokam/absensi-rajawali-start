@@ -7,23 +7,22 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useQueryState } from "nuqs";
-import { type ChangeEvent, useEffect } from "react";
 import { useDebounce } from "use-debounce";
 import SearchBar from "@/components/SearchBar";
 import { formatResponse } from "@/helper/response.helper";
-import type { DesaBase } from "@/types/desa";
+import type { LogBase } from "@/types/log";
 import { prisma } from "@/utils/prisma";
 import { useAlert } from "@/utils/useAlert";
 
-const getAllDesa = createServerFn({ method: "GET" }).handler(async () => {
-	const data = await prisma.desa.findMany();
+const getAllLog = createServerFn({ method: "GET" }).handler(async () => {
+	const data = await prisma.log.findMany();
 
-	return formatResponse(true, "Berhasil mendapatkan data Desa", data, null);
+	return formatResponse(true, "Berhasil mendapatkan data Log", data, null);
 });
 
-export const Route = createFileRoute("/admin/_protected/desa")({
+export const Route = createFileRoute("/admin/_protected/log")({
 	component: RouteComponent,
-	loader: () => getAllDesa(),
+	loader: () => getAllLog(),
 });
 
 function RouteComponent() {
@@ -35,15 +34,17 @@ function RouteComponent() {
 	const [debouncedSearch] = useDebounce(searchValue, 2000);
 	const { setAlert } = useAlert();
 
-	const columnHelper = createColumnHelper<DesaBase>();
+	const columnHelper = createColumnHelper<LogBase>();
 
 	const columns = [
 		columnHelper.accessor("id", { header: "ID" }),
-		columnHelper.accessor("nama", { header: "Nama" }),
+		columnHelper.accessor("event", { header: "Event" }),
+		columnHelper.accessor("description", { header: "Description" }),
+		columnHelper.accessor("user_id", { header: "User ID" }),
 	];
 
 	const table = useReactTable({
-		data: data.data || [],
+		data: data?.data || [],
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 	});
@@ -85,8 +86,8 @@ function RouteComponent() {
 				<tbody>
 					{
 						// isPending
-						// ? Skeleton(table)
-						// :
+						// 	? Skeleton(table)
+						// 	:
 						table
 							.getRowModel()
 							.rows.map((row) => (

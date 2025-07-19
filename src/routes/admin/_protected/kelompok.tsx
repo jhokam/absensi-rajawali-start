@@ -4,26 +4,29 @@ import {
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
+	getFilteredRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
 import { useQueryState } from "nuqs";
-import { type ChangeEvent, useEffect } from "react";
+import { type ChangeEvent, useState } from "react";
 import { useDebounce } from "use-debounce";
 import SearchBar from "@/components/SearchBar";
+import Button from "@/components/ui/Button";
+import Select from "@/components/ui/Select";
 import { formatResponse } from "@/helper/response.helper";
-import type { DesaBase } from "@/types/desa";
+import type { KelompokBase } from "@/types/kelompok";
 import { prisma } from "@/utils/prisma";
 import { useAlert } from "@/utils/useAlert";
 
-const getAllDesa = createServerFn({ method: "GET" }).handler(async () => {
-	const data = await prisma.desa.findMany();
+const getAllKelompok = createServerFn({ method: "GET" }).handler(async () => {
+	const data = await prisma.kelompok.findMany();
 
 	return formatResponse(true, "Berhasil mendapatkan data Desa", data, null);
 });
 
-export const Route = createFileRoute("/admin/_protected/desa")({
+export const Route = createFileRoute("/admin/_protected/kelompok")({
 	component: RouteComponent,
-	loader: () => getAllDesa(),
+	loader: () => getAllKelompok(),
 });
 
 function RouteComponent() {
@@ -34,8 +37,12 @@ function RouteComponent() {
 	});
 	const [debouncedSearch] = useDebounce(searchValue, 2000);
 	const { setAlert } = useAlert();
+	const [pagination, setPagination] = useState({
+		pageIndex: 0,
+		pageSize: 9,
+	});
 
-	const columnHelper = createColumnHelper<DesaBase>();
+	const columnHelper = createColumnHelper<KelompokBase>();
 
 	const columns = [
 		columnHelper.accessor("id", { header: "ID" }),
@@ -43,9 +50,17 @@ function RouteComponent() {
 	];
 
 	const table = useReactTable({
-		data: data.data || [],
+		data: data?.data || [],
 		columns,
 		getCoreRowModel: getCoreRowModel(),
+		manualPagination: true,
+		rowCount: data?.data.length || 0,
+		onPaginationChange: setPagination,
+		state: {
+			pagination,
+		},
+		manualFiltering: true,
+		getFilteredRowModel: getFilteredRowModel(),
 	});
 
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +69,10 @@ function RouteComponent() {
 
 	// useEffect(() => {
 	// 	if (isError) {
-	// 		setAlert(error.message, "error");
+	// 		setAlert(
+	// 			error.response?.data.message || "Internal Server Error",
+	// 			"error",
+	// 		);
 	// 	}
 	// }, [isError, error]);
 
@@ -85,8 +103,8 @@ function RouteComponent() {
 				<tbody>
 					{
 						// isPending
-						// ? Skeleton(table)
-						// :
+						// 	? Skeleton(table)
+						// 	:
 						table
 							.getRowModel()
 							.rows.map((row) => (
@@ -103,6 +121,40 @@ function RouteComponent() {
 							))
 					}
 				</tbody>
+				<tfoot>
+					<tr>
+						<td>
+							<Button
+								type="button"
+								onClick={() => table.previousPage()}
+								disabled={!table.getCanPreviousPage()}
+							>
+								Previous
+							</Button>
+							<Button
+								type="button"
+								onClick={() => table.nextPage()}
+								disabled={!table.getCanNextPage()}
+							>
+								Next
+							</Button>
+							<Select
+								name="pageSize"
+								options={[
+									{ value: 9, label: "9" },
+									{ value: 19, label: "19" },
+									{ value: 20, label: "20" },
+									{ value: 30, label: "30" },
+								]}
+								placeholder="Select Page Size"
+								value={table.getState().pagination.pageSize}
+								onChange={(e) => table.setPageSize(Number(e.target.value))}
+							/>
+							<p>Total Page: {table.getPageCount()}</p>
+							<p>Total Row: {table.getRowCount()}</p>
+						</td>
+					</tr>
+				</tfoot>
 			</table>
 		</>
 	);

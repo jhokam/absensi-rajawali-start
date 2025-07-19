@@ -7,23 +7,23 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useQueryState } from "nuqs";
-import { type ChangeEvent, useEffect } from "react";
+import type { ChangeEvent } from "react";
 import { useDebounce } from "use-debounce";
 import SearchBar from "@/components/SearchBar";
 import { formatResponse } from "@/helper/response.helper";
-import type { DesaBase } from "@/types/desa";
+import type { PresenceBase } from "@/types/presence";
 import { prisma } from "@/utils/prisma";
 import { useAlert } from "@/utils/useAlert";
 
-const getAllDesa = createServerFn({ method: "GET" }).handler(async () => {
-	const data = await prisma.desa.findMany();
+const getAllPresensi = createServerFn({ method: "GET" }).handler(async () => {
+	const data = await prisma.presence.findMany();
 
-	return formatResponse(true, "Berhasil mendapatkan data Desa", data, null);
+	return formatResponse(true, "Berhasil mendapatkan data Presensi", data, null);
 });
 
-export const Route = createFileRoute("/admin/_protected/desa")({
+export const Route = createFileRoute("/admin/_protected/presensi")({
 	component: RouteComponent,
-	loader: () => getAllDesa(),
+	loader: () => getAllPresensi(),
 });
 
 function RouteComponent() {
@@ -35,15 +35,17 @@ function RouteComponent() {
 	const [debouncedSearch] = useDebounce(searchValue, 2000);
 	const { setAlert } = useAlert();
 
-	const columnHelper = createColumnHelper<DesaBase>();
+	const columnHelper = createColumnHelper<PresenceBase>();
 
 	const columns = [
 		columnHelper.accessor("id", { header: "ID" }),
-		columnHelper.accessor("nama", { header: "Nama" }),
+		columnHelper.accessor("event_id", { header: "Event ID" }),
+		columnHelper.accessor("generus_id", { header: "Generus ID" }),
+		columnHelper.accessor("status", { header: "Status" }),
 	];
 
 	const table = useReactTable({
-		data: data.data || [],
+		data: data?.data || [],
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 	});
@@ -85,8 +87,8 @@ function RouteComponent() {
 				<tbody>
 					{
 						// isPending
-						// ? Skeleton(table)
-						// :
+						// 	? Skeleton(table)
+						// 	:
 						table
 							.getRowModel()
 							.rows.map((row) => (
