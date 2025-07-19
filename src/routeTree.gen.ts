@@ -8,28 +8,128 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
+import { createFileRoute } from '@tanstack/react-router'
 
-export interface FileRoutesByFullPath {}
-export interface FileRoutesByTo {}
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminProtectedRouteRouteImport } from './routes/admin/_protected/route'
+import { Route as AdminProtectedDashboardRouteImport } from './routes/admin/_protected/dashboard'
+
+const AdminRouteImport = createFileRoute('/admin')()
+
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProtectedRouteRoute = AdminProtectedRouteRouteImport.update({
+  id: '/_protected',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProtectedDashboardRoute = AdminProtectedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminProtectedRouteRoute,
+} as any)
+
+export interface FileRoutesByFullPath {
+  '/admin': typeof AdminProtectedRouteRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/dashboard': typeof AdminProtectedDashboardRoute
+}
+export interface FileRoutesByTo {
+  '/admin': typeof AdminProtectedRouteRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/dashboard': typeof AdminProtectedDashboardRoute
+}
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/_protected': typeof AdminProtectedRouteRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/_protected/dashboard': typeof AdminProtectedDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: never
+  fullPaths: '/admin' | '/admin/login' | '/admin/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: never
-  id: '__root__'
+  to: '/admin' | '/admin/login' | '/admin/dashboard'
+  id:
+    | '__root__'
+    | '/admin'
+    | '/admin/_protected'
+    | '/admin/login'
+    | '/admin/_protected/dashboard'
   fileRoutesById: FileRoutesById
 }
-export interface RootRouteChildren {}
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {}
+export interface RootRouteChildren {
+  AdminRoute: typeof AdminRouteWithChildren
 }
 
-const rootRouteChildren: RootRouteChildren = {}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/_protected': {
+      id: '/admin/_protected'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminProtectedRouteRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/_protected/dashboard': {
+      id: '/admin/_protected/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminProtectedDashboardRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
+    }
+  }
+}
+
+interface AdminProtectedRouteRouteChildren {
+  AdminProtectedDashboardRoute: typeof AdminProtectedDashboardRoute
+}
+
+const AdminProtectedRouteRouteChildren: AdminProtectedRouteRouteChildren = {
+  AdminProtectedDashboardRoute: AdminProtectedDashboardRoute,
+}
+
+const AdminProtectedRouteRouteWithChildren =
+  AdminProtectedRouteRoute._addFileChildren(AdminProtectedRouteRouteChildren)
+
+interface AdminRouteChildren {
+  AdminProtectedRouteRoute: typeof AdminProtectedRouteRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminProtectedRouteRoute: AdminProtectedRouteRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  AdminRoute: AdminRouteWithChildren,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()

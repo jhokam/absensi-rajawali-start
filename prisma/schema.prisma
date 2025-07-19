@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/client"
+  runtime  = "bun"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Desa {
+  id         Int        @id @default(autoincrement()) @db.SmallInt
+  created_at DateTime   @default(now())
+  nama       String     @unique @db.VarChar(50)
+  kelompok   Kelompok[]
+
+  @@index([nama])
+}
+
+model Kelompok {
+  id         String    @id @db.Char(3)
+  created_at DateTime  @default(now())
+  nama       String    @unique @db.VarChar(50)
+  generus    Generus[]
+  desa_id    Int
+  desaId     Desa      @relation(fields: [desa_id], references: [id])
+
+  @@index([nama])
+}
+
+model Generus {
+  id                       String             @id @default(uuid()) @db.Uuid
+  created_at               DateTime           @default(now())
+  updated_at               DateTime           @updatedAt
+  nama                     String             @db.VarChar(255)
+  jenis_kelamin            JenisKelamin
+  tempat_lahir             String             @db.VarChar(50)
+  tanggal_lahir            DateTime           @db.Date
+  jenjang                  Jenjang
+  nomer_whatsapp           String?            @db.VarChar(15)
+  pendidikan_terakhir      PendidikanTerakhir
+  nama_orang_tua           String?            @db.VarChar(255)
+  nomer_whatsapp_orang_tua String?            @db.VarChar(15)
+  sambung                  Sambung            @default(Tidak_Aktif)
+  alamat_tempat_tinggal    String             @db.VarChar(255)
+  keterangan               Keterangan
+  alamat_asal              String?            @db.VarChar(255)
+  kelompok_id              String             @db.Char(3)
+  kelompokId               Kelompok           @relation(fields: [kelompok_id], references: [id])
+  presence                 Presence[]
+
+  @@index([nama, jenis_kelamin, jenjang, pendidikan_terakhir, sambung, keterangan])
+}
+
+model User {
+  id         String   @id @default(uuid()) @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  username   String   @unique @db.VarChar(50)
+  password   String   @db.VarChar(128)
+  role       Role     @default(User)
+  log        Log[]
+
+  @@index([username])
+}
+
+model Log {
+  id          String   @id @default(uuid()) @db.Uuid
+  created_at  DateTime @default(now())
+  event       String   @db.VarChar(255)
+  description String
+  user_id     String   @db.Uuid
+  user        User     @relation(fields: [user_id], references: [id])
+}
+
+model Event {
+  id          String     @id @default(uuid()) @db.Uuid
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+  title       String     @unique @db.VarChar(255)
+  start_date  DateTime
+  end_date    DateTime
+  latitude    Float      @db.DoublePrecision
+  longitude   Float      @db.DoublePrecision
+  description String?
+  presence    Presence[]
+
+  @@index([title])
+}
+
+model Presence {
+  id         String   @id @default(uuid()) @db.Uuid
+  created_at DateTime @default(now())
+  status     Status   @default(Tidak_Hadir)
+  event_id   String   @db.Uuid
+  eventId    Event    @relation(fields: [event_id], references: [id])
+  generus_id String   @db.Uuid
+  generusId  Generus  @relation(fields: [generus_id], references: [id])
+}
+
+enum JenisKelamin {
+  Laki_Laki @map("Laki-Laki")
+  Perempuan
+}
+
+enum Jenjang {
+  Paud
+  Caberawit
+  Pra_Remaja @map("Pra Remaja")
+  Remaja
+  Pra_Nikah  @map("Pra Nikah")
+}
+
+enum Role {
+  Super_Admin @map("Super Admin")
+  Admin
+  User
+}
+
+enum Sambung {
+  Aktif
+  Tidak_Aktif @map("Tidak Aktif")
+}
+
+enum PendidikanTerakhir {
+  PAUD
+  TK
+  SD
+  SMP
+  SMA_SMK @map("SMA/SMK")
+  D1_D3   @map("D1-D3")
+  S1_D4   @map("S1/D4")
+  S2
+  S3
+}
+
+enum Keterangan {
+  Pendatang
+  Pribumi
+}
+
+enum Status {
+  Hadir
+  Izin
+  Tidak_Hadir @map("Tidak Hadir")
+}
