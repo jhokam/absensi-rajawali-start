@@ -4,12 +4,13 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { verify } from "argon2";
 import { Cookies, useCookies } from "react-cookie";
-import TextError from "../../components/TextError";
-import Button from "../../components/ui/Button";
-import ThemedInput from "../../components/ui/Input";
-import { loginSchema } from "../../types/auth";
-import { prisma } from "../../utils/prisma";
-import { useAlert } from "../../utils/useAlert";
+import TextError from "@/components/TextError";
+import Button from "@/components/ui/Button";
+import ThemedInput from "@/components/ui/Input";
+import { formatErrorResponse, formatResponse } from "@/helper/response.helper";
+import { loginSchema } from "@/types/auth";
+import { prisma } from "@/utils/prisma";
+import { useAlert } from "@/utils/useAlert";
 
 const loginFn = createServerFn({ method: "POST" })
 	.validator(loginSchema)
@@ -19,26 +20,10 @@ const loginFn = createServerFn({ method: "POST" })
 				username: data.username,
 			},
 		});
-		if (!user) {
-			throw {
-				data: {
-					message: "User not found",
-				},
-			};
+		if (!user || !verify(user.password, data.password)) {
+			throw formatErrorResponse("Invalid User or Password", null);
 		}
-		const isPasswordValid = await verify(user.password, data.password);
-		if (!isPasswordValid) {
-			throw {
-				data: {
-					message: "Invalid password",
-				},
-			};
-		}
-		return {
-			data: {
-				message: "Login successful",
-			},
-		};
+		return formatResponse(true, "Login successful.", data, null);
 	});
 
 export const Route = createFileRoute("/admin/login")({
@@ -72,8 +57,8 @@ function RouteComponent() {
 				},
 				{
 					onSuccess: (data) => {
-						setAlert(data.data.message, "success");
-						setCookie("access_token", data.data.message, {
+						setAlert(data.message, "success");
+						setCookie("access_token", data.message, {
 							expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
 							secure: true,
 							sameSite: "strict",

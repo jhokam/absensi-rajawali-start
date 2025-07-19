@@ -9,14 +9,14 @@ import Sidebar from "../../../components/Sidebar";
 
 export const Route = createFileRoute("/admin/_protected")({
 	component: RouteComponent,
-	beforeLoad: () => {
-		const cookie = new Cookies();
-		if (!cookie.get("access_token")) {
-			throw redirect({
-				to: "/admin/login",
-			});
-		}
-	},
+	// beforeLoad: () => {
+	// 	const cookie = new Cookies();
+	// 	if (!cookie.get("access_token")) {
+	// 		throw redirect({
+	// 			to: "/admin/login",
+	// 		});
+	// 	}
+	// },
 });
 
 function RouteComponent() {

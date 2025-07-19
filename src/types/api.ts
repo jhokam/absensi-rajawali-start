@@ -6,14 +6,14 @@ export type ErrorResponse = {
 export type ResponseBase<T> = {
 	success: boolean;
 	message: string;
-	data: T;
+	data: T | null;
 	error: ErrorResponse | null;
 };
 
 export type ResponseBaseWithArray<T> = {
 	success: boolean;
 	message: string;
-	data: T[];
+	data: T[] | null;
 	error: ErrorResponse | null;
 };
 

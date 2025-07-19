@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminProtectedRouteRouteImport } from './routes/admin/_protected/route'
+import { Route as AdminProtectedDesaRouteImport } from './routes/admin/_protected/desa'
 import { Route as AdminProtectedDashboardRouteImport } from './routes/admin/_protected/dashboard'
 
 const AdminRouteImport = createFileRoute('/admin')()
@@ -31,6 +32,11 @@ const AdminProtectedRouteRoute = AdminProtectedRouteRouteImport.update({
   id: '/_protected',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProtectedDesaRoute = AdminProtectedDesaRouteImport.update({
+  id: '/desa',
+  path: '/desa',
+  getParentRoute: () => AdminProtectedRouteRoute,
+} as any)
 const AdminProtectedDashboardRoute = AdminProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -41,11 +47,13 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminProtectedRouteRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/dashboard': typeof AdminProtectedDashboardRoute
+  '/admin/desa': typeof AdminProtectedDesaRoute
 }
 export interface FileRoutesByTo {
   '/admin': typeof AdminProtectedRouteRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/dashboard': typeof AdminProtectedDashboardRoute
+  '/admin/desa': typeof AdminProtectedDesaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,18 +61,20 @@ export interface FileRoutesById {
   '/admin/_protected': typeof AdminProtectedRouteRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/_protected/dashboard': typeof AdminProtectedDashboardRoute
+  '/admin/_protected/desa': typeof AdminProtectedDesaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/admin' | '/admin/login' | '/admin/dashboard'
+  fullPaths: '/admin' | '/admin/login' | '/admin/dashboard' | '/admin/desa'
   fileRoutesByTo: FileRoutesByTo
-  to: '/admin' | '/admin/login' | '/admin/dashboard'
+  to: '/admin' | '/admin/login' | '/admin/dashboard' | '/admin/desa'
   id:
     | '__root__'
     | '/admin'
     | '/admin/_protected'
     | '/admin/login'
     | '/admin/_protected/dashboard'
+    | '/admin/_protected/desa'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,6 +104,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProtectedRouteRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/_protected/desa': {
+      id: '/admin/_protected/desa'
+      path: '/desa'
+      fullPath: '/admin/desa'
+      preLoaderRoute: typeof AdminProtectedDesaRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
+    }
     '/admin/_protected/dashboard': {
       id: '/admin/_protected/dashboard'
       path: '/dashboard'
@@ -106,10 +123,12 @@ declare module '@tanstack/react-router' {
 
 interface AdminProtectedRouteRouteChildren {
   AdminProtectedDashboardRoute: typeof AdminProtectedDashboardRoute
+  AdminProtectedDesaRoute: typeof AdminProtectedDesaRoute
 }
 
 const AdminProtectedRouteRouteChildren: AdminProtectedRouteRouteChildren = {
   AdminProtectedDashboardRoute: AdminProtectedDashboardRoute,
+  AdminProtectedDesaRoute: AdminProtectedDesaRoute,
 }
 
 const AdminProtectedRouteRouteWithChildren =

@@ -11,6 +11,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { NuqsAdapter } from "nuqs/adapters/react";
 import { CookiesProvider } from "react-cookie";
 import { CustomAlert } from "../components/CustomAlert";
 import { DefaultCatchBoundary } from "../components/DefaultCatchBoundary";
@@ -101,10 +102,12 @@ function RootComponent() {
 				<QueryClientProvider client={queryClient}>
 					<CookiesProvider>
 						<AlertProvider>
-							<CustomAlert />
-							<Outlet />
-							<TanStackRouterDevtools />
-							<ReactQueryDevtools initialIsOpen={true} />
+							<NuqsAdapter>
+								<CustomAlert />
+								<Outlet />
+								<TanStackRouterDevtools />
+								<ReactQueryDevtools initialIsOpen={true} />
+							</NuqsAdapter>
 						</AlertProvider>
 					</CookiesProvider>
 				</QueryClientProvider>
