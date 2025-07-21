@@ -31,14 +31,14 @@ export type GenerusBase = {
 	kelompok_id?: string;
 };
 
-export type GenerusFilter = {
-	query?: string;
-	jenis_kelamin?: GenerusBase["jenis_kelamin"];
-	jenjang?: GenerusBase["jenjang"];
-	pendidikan_terakhir?: GenerusBase["pendidikan_terakhir"];
-	sambung?: GenerusBase["sambung"];
-	keterangan?: GenerusBase["keterangan"];
-};
+// export type GenerusFilter = {
+// 	query?: string;
+// 	jenis_kelamin?: GenerusBase["jenis_kelamin"];
+// 	jenjang?: GenerusBase["jenjang"];
+// 	pendidikan_terakhir?: GenerusBase["pendidikan_terakhir"];
+// 	sambung?: GenerusBase["sambung"];
+// 	keterangan?: GenerusBase["keterangan"];
+// };
 
 export type GenerusRequest = Omit<GenerusBase, "id">;
 
@@ -78,4 +78,20 @@ export const generusSchema = z.object({
 	}),
 	alamat_asal: z.string().nonempty("Alamat Asal tidak boleh kosong"),
 	kelompok_id: z.string().nonempty("Kelompok tidak boleh kosong"),
+});
+
+export const generusFilter = z.object({
+	q: z.string().optional(),
+	page: z.number().optional(),
+	limit: z.number().optional(),
+	jenis_kelamin: z.enum(["Laki_Laki", "Perempuan"]).optional(),
+	jenjang: z
+		.enum(["Paud", "Caberawit", "Pra_Remaja", "Remaja", "Pra_Nikah"])
+		.optional(),
+	pendidikan_terakhir: z
+		.enum(["PAUD", "TK", "SD", "SMP", "SMA_SMK", "D1_D3", "S1_D4", "S2", "S3"])
+		.optional(),
+	sambung: z.enum(["Aktif", "Tidak_Aktif"]).optional(),
+	keterangan: z.enum(["Pendatang", "Pribumi"]).optional(),
+	kelompok_id: z.string().optional(),
 });

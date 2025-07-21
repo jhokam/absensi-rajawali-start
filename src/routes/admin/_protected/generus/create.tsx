@@ -15,11 +15,29 @@ import {
 } from "@/constants/generus";
 import { type GenerusRequest, generusSchema } from "@/types/generus";
 import { useAlert } from "@/utils/useAlert";
+import { getAllKelompok } from "../kelompok";
+
+const createKelompok = createServerFn({ method: "POST" }).handler(
+	async (ctx) => {
+		const data = await prisma.kelompok.create({
+			data: ctx.data,
+		});
+		return formatResponseArray(
+			true,
+			"Berhasil menambahkan data Kelompok",
+			{ items: data },
+			null,
+		);
+	},
+);
+
 export const Route = createFileRoute("/admin/_protected/generus/create")({
 	component: RouteComponent,
+	loader: () => getAllKelompok(),
 });
 
 function RouteComponent() {
+	const { data } = Route.useLoaderData({ from: Route.id });
 	const { setAlert } = useAlert();
 	const queryClient = useQueryClient();
 
@@ -34,7 +52,7 @@ function RouteComponent() {
 	});
 
 	const kelompokOptions =
-		kelompokValue.data?.data.items.map((item) => ({
+		data?.items.map((item) => ({
 			value: item.id,
 			label: item.nama,
 		})) || [];

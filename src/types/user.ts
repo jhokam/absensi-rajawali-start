@@ -27,3 +27,10 @@ export const defaultValueUser: UserRequest = {
 	password: "",
 	role: "User",
 };
+
+export const userFilter = z.object({
+	q: z.string().optional(),
+	page: z.number().optional(),
+	limit: z.number().optional(),
+	role: z.enum(["Admin", "User"]).optional(),
+});

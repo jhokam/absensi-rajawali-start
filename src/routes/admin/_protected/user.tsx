@@ -10,27 +10,31 @@ import {
 } from "@tanstack/react-table";
 import { useQueryState } from "nuqs";
 import { type ChangeEvent, useState } from "react";
-import { useDebounce } from "use-debounce";
 import Dialog from "@/components/Dialog";
 import SearchBar from "@/components/SearchBar";
-import SheetCreateEvent from "@/components/Sheet/Create/Event";
-import SheetUpdateEvent from "@/components/Sheet/Update/Event";
+import SheetCreateUser from "@/components/Sheet/Create/User";
+import SheetUpdateUser from "@/components/Sheet/Update/User";
 import Button from "@/components/ui/Button";
-import type { EventWhereInput } from "@/generated/client/models";
+import type { UserWhereInput } from "@/generated/client/models";
 import { formatResponseArray } from "@/helper/response.helper";
-import { type EventBase, eventFilter } from "@/types/event";
+import { type UserBase, userFilter } from "@/types/user";
 import { prisma } from "@/utils/prisma";
 import { useAlert } from "@/utils/useAlert";
 
-const getAllEvent = createServerFn({ method: "GET" })
-	.validator(eventFilter)
+const getAllUser = createServerFn({ method: "GET" })
+	.validator(userFilter)
 	.handler(async (ctx) => {
 		const limit = ctx.data.limit ?? 9;
 		const page = ctx.data.page ?? 0;
-		const where: EventWhereInput = {
+		const where: UserWhereInput = {
 			AND: [
 				{
-					title: {
+					role: {
+						equals: ctx.data.role,
+					},
+				},
+				{
+					username: {
 						contains: ctx.data.q,
 						mode: "insensitive",
 					},
@@ -39,45 +43,46 @@ const getAllEvent = createServerFn({ method: "GET" })
 		};
 
 		const [data, total] = await prisma.$transaction([
-			prisma.event.findMany({
+			prisma.user.findMany({
 				skip: page * limit,
 				take: limit,
 				where,
 			}),
-			prisma.event.count({ where }),
+			prisma.user.count({ where }),
 		]);
 
 		const totalPages = Math.ceil(total / limit);
 
 		return formatResponseArray(
 			true,
-			"Berhasil mendapatkan data Event",
+			"Berhasil mendapatkan data User",
 			{ items: data, meta: { total, page, limit, totalPages } },
 			null,
 		);
 	});
-export const Route = createFileRoute("/admin/_protected/kegiatan")({
+
+export const Route = createFileRoute("/admin/_protected/user")({
 	component: RouteComponent,
-	loader: () => getAllEvent({ data: {} }),
+	loader: () => getAllUser({ data: {} }),
 });
 
 function RouteComponent() {
 	const { data } = useLoaderData({ from: Route.id });
 	const [sheetCreate, setSheetCreate] = useState(false);
 	const [sheetUpdate, setSheetUpdate] = useState(false);
-	const [selectedData, setSelectedData] = useState<EventBase | null>(null);
+	const [selectedData, setSelectedData] = useState<UserBase | null>(null);
 	const [dialog, setDialog] = useState(false);
-	const [deleteId, setDeleteId] = useState<string>("");
+	const [deleteId, setDeleteId] = useState("");
 	const queryClient = useQueryClient();
 	const [searchValue, setSearchValue] = useQueryState("q", {
 		defaultValue: "",
 		throttleMs: 2000,
 	});
-	const [debouncedSearch] = useDebounce(searchValue, 2000);
+	// const [debouncedSearch] = useDebounce(searchValue, 2000);
 	const { setAlert } = useAlert();
 
 	const mutation = useMutation({
-		mutationFn: (id: string) => null,
+		mutationFn: (id: string) => {},
 		onError: (error) => {
 			setAlert(
 				error.response?.data.error.message || "Internal Server Error",
@@ -86,9 +91,9 @@ function RouteComponent() {
 		},
 	});
 
-	const columnHelper = createColumnHelper<EventBase>();
+	const columnHelper = createColumnHelper<UserBase>();
 
-	const handleEdit = (row: EventBase) => {
+	const handleEdit = (row: UserBase) => {
 		setSelectedData(row);
 		setSheetUpdate(true);
 	};
@@ -96,7 +101,7 @@ function RouteComponent() {
 	const handleDeleteConfirm = () => {
 		mutation.mutate(deleteId, {
 			onSuccess: (data) => {
-				queryClient.invalidateQueries({ queryKey: ["eventData"] });
+				queryClient.invalidateQueries({ queryKey: ["userData"] });
 				setAlert(data.data.message, "success");
 			},
 		});
@@ -104,19 +109,15 @@ function RouteComponent() {
 		setDeleteId("");
 	};
 
-	const handleDelete = (row: EventBase) => {
+	const handleDelete = (row: UserBase) => {
 		setDeleteId(row.id);
 		setDialog(true);
 	};
 
 	const columns = [
 		columnHelper.accessor("id", { header: "ID" }),
-		columnHelper.accessor("title", { header: "Judul" }),
-		columnHelper.accessor("start_date", { header: "Tanggal Mulai" }),
-		columnHelper.accessor("end_date", { header: "Tanggal Selesai" }),
-		columnHelper.accessor("latitude", { header: "Latitude" }),
-		columnHelper.accessor("longitude", { header: "Longitude" }),
-		columnHelper.accessor("description", { header: "Deskripsi" }),
+		columnHelper.accessor("username", { header: "Username" }),
+		columnHelper.accessor("role", { header: "Role" }),
 		columnHelper.display({
 			id: "actions",
 			header: "Action",
@@ -146,7 +147,7 @@ function RouteComponent() {
 	];
 
 	const table = useReactTable({
-		data: data || [],
+		data: data?.items || [],
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 	});
@@ -168,10 +169,10 @@ function RouteComponent() {
 				/>
 			)}
 			{sheetCreate && (
-				<SheetCreateEvent closeSheet={() => setSheetCreate(false)} />
+				<SheetCreateUser closeSheet={() => setSheetCreate(false)} />
 			)}
 			{sheetUpdate && selectedData && (
-				<SheetUpdateEvent
+				<SheetUpdateUser
 					closeSheet={() => setSheetUpdate(false)}
 					selectedData={selectedData}
 				/>
@@ -183,7 +184,7 @@ function RouteComponent() {
 					value={searchValue}
 				/>
 				<Button typeof="button" onClick={() => setSheetCreate(true)}>
-					Create Generus
+					Create User
 				</Button>
 			</div>
 			<table className="w-full text-left text-sm text-gray-500">

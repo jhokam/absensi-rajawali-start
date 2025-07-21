@@ -10,24 +10,43 @@ import { useQueryState } from "nuqs";
 import type { ChangeEvent } from "react";
 import { useDebounce } from "use-debounce";
 import SearchBar from "@/components/SearchBar";
-import { formatResponse } from "@/helper/response.helper";
+import { formatResponseArray } from "@/helper/response.helper";
 import type { PresenceBase } from "@/types/presence";
+import { presenceFilter } from "@/types/presence";
 import { prisma } from "@/utils/prisma";
 import { useAlert } from "@/utils/useAlert";
 
-const getAllPresensi = createServerFn({ method: "GET" }).handler(async () => {
-	const data = await prisma.presence.findMany();
+const getAllPresensi = createServerFn({ method: "GET" })
+	.validator(presenceFilter)
+	.handler(async (ctx) => {
+		const limit = ctx.data.limit ?? 9;
+		const page = ctx.data.page ?? 0;
 
-	return formatResponse(true, "Berhasil mendapatkan data Presensi", data, null);
-});
+		const [data, total] = await prisma.$transaction([
+			prisma.presence.findMany({
+				skip: page * limit,
+				take: limit,
+			}),
+			prisma.presence.count(),
+		]);
+
+		const totalPages = Math.ceil(total / limit);
+
+		return formatResponseArray(
+			true,
+			"Berhasil mendapatkan data Presensi",
+			{ items: data, meta: { total, page, limit, totalPages } },
+			null,
+		);
+	});
 
 export const Route = createFileRoute("/admin/_protected/presensi")({
 	component: RouteComponent,
-	loader: () => getAllPresensi(),
+	loader: () => getAllPresensi({ data: {} }),
 });
 
 function RouteComponent() {
-	const data = useLoaderData({ from: Route.id });
+	const { data } = useLoaderData({ from: Route.id });
 	const [searchValue, setSearchValue] = useQueryState("q", {
 		defaultValue: "",
 		throttleMs: 2000,
@@ -45,7 +64,7 @@ function RouteComponent() {
 	];
 
 	const table = useReactTable({
-		data: data?.data || [],
+		data: data?.items || [],
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 	});
@@ -53,12 +72,6 @@ function RouteComponent() {
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		setSearchValue(e.target.value);
 	};
-
-	// useEffect(() => {
-	// 	if (isError) {
-	// 		setAlert(error.message, "error");
-	// 	}
-	// }, [isError, error]);
 
 	return (
 		<>
@@ -85,25 +98,15 @@ function RouteComponent() {
 					))}
 				</thead>
 				<tbody>
-					{
-						// isPending
-						// 	? Skeleton(table)
-						// 	:
-						table
-							.getRowModel()
-							.rows.map((row) => (
-								<tr key={row.id} className="bg-white border-b">
-									{row.getVisibleCells().map((cell) => (
-										<td key={cell.id} className="px-6 py-4">
-											{flexRender(
-												cell.column.columnDef.cell,
-												cell.getContext(),
-											)}
-										</td>
-									))}
-								</tr>
-							))
-					}
+					{table.getRowModel().rows.map((row) => (
+						<tr key={row.id} className="bg-white border-b">
+							{row.getVisibleCells().map((cell) => (
+								<td key={cell.id} className="px-6 py-4">
+									{flexRender(cell.column.columnDef.cell, cell.getContext())}
+								</td>
+							))}
+						</tr>
+					))}
 				</tbody>
 			</table>
 		</>

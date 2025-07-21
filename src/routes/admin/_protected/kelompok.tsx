@@ -13,24 +13,79 @@ import { useDebounce } from "use-debounce";
 import SearchBar from "@/components/SearchBar";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
-import { formatResponse } from "@/helper/response.helper";
-import type { KelompokBase } from "@/types/kelompok";
+import type { KelompokWhereInput } from "@/generated/client/models";
+import { formatResponseArray } from "@/helper/response.helper";
+import { type KelompokBase, kelompokFilter } from "@/types/kelompok";
 import { prisma } from "@/utils/prisma";
 import { useAlert } from "@/utils/useAlert";
 
-const getAllKelompok = createServerFn({ method: "GET" }).handler(async () => {
-	const data = await prisma.kelompok.findMany();
+export const getAllKelompok = createServerFn({ method: "GET" }).handler(
+	async () => {
+		const data = await prisma.kelompok.findMany();
+		return formatResponseArray(
+			true,
+			"Berhasil mendapatkan data Kelompok",
+			{
+				items: data,
+				meta: {
+					total: data.length,
+					page: 0,
+					limit: data.length,
+					totalPages: 1,
+				},
+			},
+			null,
+		);
+	},
+);
 
-	return formatResponse(true, "Berhasil mendapatkan data Desa", data, null);
-});
+const getAllPaginatedKelompok = createServerFn({ method: "GET" })
+	.validator(kelompokFilter)
+	.handler(async (ctx) => {
+		const limit = ctx.data.limit ?? 9;
+		const page = ctx.data.page ?? 0;
+		const where: KelompokWhereInput = {
+			AND: [
+				{
+					desa_id: {
+						equals: ctx.data.desa_id,
+					},
+				},
+				{
+					nama: {
+						contains: ctx.data.q,
+						mode: "insensitive",
+					},
+				},
+			],
+		};
+
+		const [data, total] = await prisma.$transaction([
+			prisma.kelompok.findMany({
+				skip: page * limit,
+				take: limit,
+				where,
+			}),
+			prisma.kelompok.count({ where }),
+		]);
+
+		const totalPages = Math.ceil(total / limit);
+
+		return formatResponseArray(
+			true,
+			"Berhasil mendapatkan data Kelompok",
+			{ items: data, meta: { total, page, limit, totalPages } },
+			null,
+		);
+	});
 
 export const Route = createFileRoute("/admin/_protected/kelompok")({
 	component: RouteComponent,
-	loader: () => getAllKelompok(),
+	loader: () => getAllPaginatedKelompok({ data: {} }),
 });
 
 function RouteComponent() {
-	const data = useLoaderData({ from: Route.id });
+	const { data } = useLoaderData({ from: Route.id });
 	const [searchValue, setSearchValue] = useQueryState("q", {
 		defaultValue: "",
 		throttleMs: 2000,
@@ -50,11 +105,11 @@ function RouteComponent() {
 	];
 
 	const table = useReactTable({
-		data: data?.data || [],
+		data: data?.items || [],
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 		manualPagination: true,
-		rowCount: data?.data.length || 0,
+		rowCount: data?.meta.total || 0,
 		onPaginationChange: setPagination,
 		state: {
 			pagination,
@@ -66,15 +121,6 @@ function RouteComponent() {
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		setSearchValue(e.target.value);
 	};
-
-	// useEffect(() => {
-	// 	if (isError) {
-	// 		setAlert(
-	// 			error.response?.data.message || "Internal Server Error",
-	// 			"error",
-	// 		);
-	// 	}
-	// }, [isError, error]);
 
 	return (
 		<>
@@ -101,25 +147,15 @@ function RouteComponent() {
 					))}
 				</thead>
 				<tbody>
-					{
-						// isPending
-						// 	? Skeleton(table)
-						// 	:
-						table
-							.getRowModel()
-							.rows.map((row) => (
-								<tr key={row.id} className="bg-white border-b">
-									{row.getVisibleCells().map((cell) => (
-										<td key={cell.id} className="px-6 py-4">
-											{flexRender(
-												cell.column.columnDef.cell,
-												cell.getContext(),
-											)}
-										</td>
-									))}
-								</tr>
-							))
-					}
+					{table.getRowModel().rows.map((row) => (
+						<tr key={row.id} className="bg-white border-b">
+							{row.getVisibleCells().map((cell) => (
+								<td key={cell.id} className="px-6 py-4">
+									{flexRender(cell.column.columnDef.cell, cell.getContext())}
+								</td>
+							))}
+						</tr>
+					))}
 				</tbody>
 				<tfoot>
 					<tr>

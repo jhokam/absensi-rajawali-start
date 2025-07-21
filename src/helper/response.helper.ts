@@ -1,11 +1,32 @@
-import type { ResponseBase } from "../types/api";
+import type {
+	Pagination,
+	ResponseBase,
+	ResponseBaseWithArrayPagination,
+} from "../types/api";
 
 export function formatResponse<T>(
 	success: boolean,
 	message: string,
-	data: T | null,
+	data: { items: T; meta: Pagination } | null,
 	error: Error | null,
-): ResponseBase<T> {
+): ResponseBase<{ items: T; meta: Pagination } | null> {
+	return {
+		success,
+		message,
+		data,
+		error,
+	};
+}
+
+export function formatResponseArray<T>(
+	success: boolean,
+	message: string,
+	data: {
+		items: T[];
+		meta: Pagination;
+	} | null,
+	error: Error | null,
+): ResponseBaseWithArrayPagination<T> {
 	return {
 		success,
 		message,
@@ -23,8 +44,6 @@ export function formatErrorResponse(
 			? {
 					name: error.name,
 					message: error.message,
-					stack:
-						process.env.NODE_ENV === "development" ? error.stack : undefined,
 				}
 			: error;
 	return formatResponse(false, message, null, errorResponse);

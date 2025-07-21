@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminProtectedRouteRouteImport } from './routes/admin/_protected/route'
+import { Route as AdminProtectedUserRouteImport } from './routes/admin/_protected/user'
 import { Route as AdminProtectedPresensiRouteImport } from './routes/admin/_protected/presensi'
 import { Route as AdminProtectedLogRouteImport } from './routes/admin/_protected/log'
 import { Route as AdminProtectedKelompokRouteImport } from './routes/admin/_protected/kelompok'
@@ -38,6 +39,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const AdminProtectedRouteRoute = AdminProtectedRouteRouteImport.update({
   id: '/_protected',
   getParentRoute: () => AdminRoute,
+} as any)
+const AdminProtectedUserRoute = AdminProtectedUserRouteImport.update({
+  id: '/user',
+  path: '/user',
+  getParentRoute: () => AdminProtectedRouteRoute,
 } as any)
 const AdminProtectedPresensiRoute = AdminProtectedPresensiRouteImport.update({
   id: '/presensi',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/admin/kelompok': typeof AdminProtectedKelompokRoute
   '/admin/log': typeof AdminProtectedLogRoute
   '/admin/presensi': typeof AdminProtectedPresensiRoute
+  '/admin/user': typeof AdminProtectedUserRoute
   '/admin/generus/create': typeof AdminProtectedGenerusCreateRoute
   '/admin/generus': typeof AdminProtectedGenerusIndexRoute
   '/admin/generus/update/$id': typeof AdminProtectedGenerusUpdateIdRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/admin/kelompok': typeof AdminProtectedKelompokRoute
   '/admin/log': typeof AdminProtectedLogRoute
   '/admin/presensi': typeof AdminProtectedPresensiRoute
+  '/admin/user': typeof AdminProtectedUserRoute
   '/admin/generus/create': typeof AdminProtectedGenerusCreateRoute
   '/admin/generus': typeof AdminProtectedGenerusIndexRoute
   '/admin/generus/update/$id': typeof AdminProtectedGenerusUpdateIdRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/admin/_protected/kelompok': typeof AdminProtectedKelompokRoute
   '/admin/_protected/log': typeof AdminProtectedLogRoute
   '/admin/_protected/presensi': typeof AdminProtectedPresensiRoute
+  '/admin/_protected/user': typeof AdminProtectedUserRoute
   '/admin/_protected/generus/create': typeof AdminProtectedGenerusCreateRoute
   '/admin/_protected/generus/': typeof AdminProtectedGenerusIndexRoute
   '/admin/_protected/generus/update/$id': typeof AdminProtectedGenerusUpdateIdRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/admin/kelompok'
     | '/admin/log'
     | '/admin/presensi'
+    | '/admin/user'
     | '/admin/generus/create'
     | '/admin/generus'
     | '/admin/generus/update/$id'
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/admin/kelompok'
     | '/admin/log'
     | '/admin/presensi'
+    | '/admin/user'
     | '/admin/generus/create'
     | '/admin/generus'
     | '/admin/generus/update/$id'
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/admin/_protected/kelompok'
     | '/admin/_protected/log'
     | '/admin/_protected/presensi'
+    | '/admin/_protected/user'
     | '/admin/_protected/generus/create'
     | '/admin/_protected/generus/'
     | '/admin/_protected/generus/update/$id'
@@ -198,6 +210,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AdminProtectedRouteRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/admin/_protected/user': {
+      id: '/admin/_protected/user'
+      path: '/user'
+      fullPath: '/admin/user'
+      preLoaderRoute: typeof AdminProtectedUserRouteImport
+      parentRoute: typeof AdminProtectedRouteRoute
     }
     '/admin/_protected/presensi': {
       id: '/admin/_protected/presensi'
@@ -272,6 +291,7 @@ interface AdminProtectedRouteRouteChildren {
   AdminProtectedKelompokRoute: typeof AdminProtectedKelompokRoute
   AdminProtectedLogRoute: typeof AdminProtectedLogRoute
   AdminProtectedPresensiRoute: typeof AdminProtectedPresensiRoute
+  AdminProtectedUserRoute: typeof AdminProtectedUserRoute
   AdminProtectedGenerusCreateRoute: typeof AdminProtectedGenerusCreateRoute
   AdminProtectedGenerusIndexRoute: typeof AdminProtectedGenerusIndexRoute
   AdminProtectedGenerusUpdateIdRoute: typeof AdminProtectedGenerusUpdateIdRoute
@@ -284,6 +304,7 @@ const AdminProtectedRouteRouteChildren: AdminProtectedRouteRouteChildren = {
   AdminProtectedKelompokRoute: AdminProtectedKelompokRoute,
   AdminProtectedLogRoute: AdminProtectedLogRoute,
   AdminProtectedPresensiRoute: AdminProtectedPresensiRoute,
+  AdminProtectedUserRoute: AdminProtectedUserRoute,
   AdminProtectedGenerusCreateRoute: AdminProtectedGenerusCreateRoute,
   AdminProtectedGenerusIndexRoute: AdminProtectedGenerusIndexRoute,
   AdminProtectedGenerusUpdateIdRoute: AdminProtectedGenerusUpdateIdRoute,

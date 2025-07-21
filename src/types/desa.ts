@@ -18,3 +18,9 @@ export type DesaRequest = Omit<DesaBase, "id">;
 export type DesaResponseArray = ResponseBaseWithArrayPagination<DesaBase>;
 
 export type DesaResponse = ResponseBasePagination<DesaBase>;
+
+export const desaFilter = z.object({
+	q: z.string().optional(),
+	page: z.number().optional(),
+	limit: z.number().optional(),
+});

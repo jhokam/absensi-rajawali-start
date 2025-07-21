@@ -38,3 +38,4 @@ src/generated
 
 # TanStack
 .tanstack
+src/routeTree.gen.ts

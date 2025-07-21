@@ -42,3 +42,9 @@ export const defaultValueEvent: EventRequest = {
 	longitude: 0,
 	description: "",
 };
+
+export const eventFilter = z.object({
+	q: z.string().optional(),
+	page: z.number().optional(),
+	limit: z.number().optional(),
+});

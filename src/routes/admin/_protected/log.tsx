@@ -7,26 +7,63 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useQueryState } from "nuqs";
+import type { ChangeEvent } from "react";
 import { useDebounce } from "use-debounce";
 import SearchBar from "@/components/SearchBar";
-import { formatResponse } from "@/helper/response.helper";
-import type { LogBase } from "@/types/log";
+import type { LogWhereInput } from "@/generated/client/models";
+import { formatResponseArray } from "@/helper/response.helper";
+import { type LogBase, logFilter } from "@/types/log";
 import { prisma } from "@/utils/prisma";
 import { useAlert } from "@/utils/useAlert";
 
-const getAllLog = createServerFn({ method: "GET" }).handler(async () => {
-	const data = await prisma.log.findMany();
+const getAllLog = createServerFn({ method: "GET" })
+	.validator(logFilter)
+	.handler(async (ctx) => {
+		const limit = ctx.data.limit ?? 9;
+		const page = ctx.data.page ?? 0;
+		const where: LogWhereInput = {
+			AND: [
+				{
+					event: {
+						contains: ctx.data.q,
+						mode: "insensitive",
+					},
+				},
+				{
+					description: {
+						contains: ctx.data.q,
+						mode: "insensitive",
+					},
+				},
+			],
+		};
 
-	return formatResponse(true, "Berhasil mendapatkan data Log", data, null);
-});
+		const [data, total] = await prisma.$transaction([
+			prisma.log.findMany({
+				skip: page * limit,
+				take: limit,
+				where,
+			}),
+			prisma.log.count({ where }),
+		]);
+
+		const totalPages = Math.ceil(total / limit);
+
+		return formatResponseArray(
+			true,
+			"Berhasil mendapatkan data Log",
+			{ items: data, meta: { total, page, limit, totalPages } },
+			null,
+		);
+	});
 
 export const Route = createFileRoute("/admin/_protected/log")({
 	component: RouteComponent,
-	loader: () => getAllLog(),
+	loader: () => getAllLog({ data: {} }),
 });
 
 function RouteComponent() {
-	const data = useLoaderData({ from: Route.id });
+	const { data } = useLoaderData({ from: Route.id });
 	const [searchValue, setSearchValue] = useQueryState("q", {
 		defaultValue: "",
 		throttleMs: 2000,
@@ -44,7 +81,7 @@ function RouteComponent() {
 	];
 
 	const table = useReactTable({
-		data: data?.data || [],
+		data: data?.items || [],
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 	});
@@ -53,18 +90,12 @@ function RouteComponent() {
 		setSearchValue(e.target.value);
 	};
 
-	// useEffect(() => {
-	// 	if (isError) {
-	// 		setAlert(error.message, "error");
-	// 	}
-	// }, [isError, error]);
-
 	return (
 		<>
 			<div className="flex justify-between">
 				<SearchBar
 					onChange={handleChange}
-					placeholder="Search by Name"
+					placeholder="Search by Event or Description"
 					value={searchValue}
 				/>
 			</div>
@@ -84,25 +115,15 @@ function RouteComponent() {
 					))}
 				</thead>
 				<tbody>
-					{
-						// isPending
-						// 	? Skeleton(table)
-						// 	:
-						table
-							.getRowModel()
-							.rows.map((row) => (
-								<tr key={row.id} className="bg-white border-b">
-									{row.getVisibleCells().map((cell) => (
-										<td key={cell.id} className="px-6 py-4">
-											{flexRender(
-												cell.column.columnDef.cell,
-												cell.getContext(),
-											)}
-										</td>
-									))}
-								</tr>
-							))
-					}
+					{table.getRowModel().rows.map((row) => (
+						<tr key={row.id} className="bg-white border-b">
+							{row.getVisibleCells().map((cell) => (
+								<td key={cell.id} className="px-6 py-4">
+									{flexRender(cell.column.columnDef.cell, cell.getContext())}
+								</td>
+							))}
+						</tr>
+					))}
 				</tbody>
 			</table>
 		</>
